@@ -1,0 +1,167 @@
+<<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    canvas{
+        border-width: 1px;
+        border-style: solid;
+    }
+    </style>
+</head>
+<body><canvas width="1200" height="600" id = "canvas" onmousemove = "getXY(event)"></canvas></body>
+</html>
+<script>
+    var canvas = document.getElementById("canvas"),canvasWidth = 1200,canvasHeight = 600;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    ctx = canvas.getContext('2d');
+    var pointList = [];
+    var main = setInterval("updata()",30);
+    var span = setInterval("addpoint(7)",50);
+    var mouseX,mouseY;
+
+    function getXY(e){
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    }
+
+    function random(a,b){
+        return parseInt(Math.random() * (b-a+1)+a)
+    }
+
+    function addpoint(num) {
+        for (let i = 0;i<num;i++){
+            var apoint = {
+                x:mouseX + random(-40,40),
+                vx:random(-2,2),
+                y:mouseY + random(-40,40),
+                vy:random(-4,-2),
+                vg:1,//random(1,2),
+                color:"#ffffff",
+                r:255,
+                g:255,
+                b:255,
+                size:random(3,8),
+                colornum:0
+            }
+            pointList.push(apoint)
+        }
+    }
+
+    function format(num){
+        var str = num.toString(16)
+        if (str.length<2){str = "0" + str}
+        return str
+    }
+
+    function drawpoint(cnt){
+        ctx.clearRect(0,0,canvasWidth,canvasHeight);
+        for (let i = 1;i<cnt;i++){
+            ctx.beginPath();
+            ctx.fillStyle=pointList[i].color;
+            ctx.arc(pointList[i].x,pointList[i].y,Math.floor(pointList[i].size),0,2*Math.PI);
+            ctx.fill();
+        }
+    }
+
+    function updata(){
+        for( let i = 0 ; i < pointList.length ; i ++ ){
+            pointList[i].x += pointList[i].vx;
+            pointList[i].y += pointList[i].vy;
+            pointList[i].vy += pointList[i].vg/2;
+            pointList[i].size -= 0.04
+
+            var r=pointList[i].r,
+                g=pointList[i].g,
+                b=pointList[i].b,
+                colornum=pointList[i].colornum;
+                switch (colornum){
+                    case 0:
+                        if (b > 0 && g > 0) {
+                            b -= 15;
+                            g -= 15;
+                        }else{
+                            colornum++;
+                        }
+                        break;
+                    case 1:
+                        r=255;b=0;
+                        if (g < 255) {
+                            g = g + 15;
+                        }else{
+                            colornum++;
+                        }
+                        break;
+                    case 2:
+                        g = 255; b = 0
+                        if (r > 0) {
+                        r -= 15;
+                        }else{
+                            colornum++;
+                        }
+                        break;
+                    case 3:
+                        r = 0; g = 255
+                        if (b < 255) {
+                        b += 15;
+                        }else{
+                            colornum++;
+                        }
+                        break;
+                    case 4:
+                        r = 0; b = 255
+                        if (g > 0) {
+                        g -= 15;
+                        }else{
+                            colornum++;
+                        }
+                        break;
+                    case 5:
+                        g = 0; b = 255
+                        if (r < 255) {
+                        r += 15;
+                        }else{
+                            colornum++;
+                        }
+                        break;
+                    case 6:
+                        r = 255; b = 255
+                        if (g <= 255) {
+                        g += 5;
+                        }else{
+                        colornum = 7;
+                        }
+                        break;
+                    default:
+                        r=255,g=255,b=255
+                }
+            pointList[i].r = r;
+            pointList[i].g = g;
+            pointList[i].b = g;
+            pointList[i].colornum = colornum
+            pointList[i].color = "#" + format(r) + format(g) + format(b);
+
+
+
+            if( pointList[i].y  >= canvasHeight){
+                pointList[i].x *= random(8,13)*0.1
+                pointList[i].y = canvasHeight;
+                pointList[i].vy = - pointList[i].vy*(random(3,6)*0.1);
+            }
+        }
+        var cnt = 0
+        for( let i = 0 ; i < pointList.length ; i ++ ){
+            if( pointList[i].x > 0 && pointList[i].x < canvasWidth && pointList[i].size > 1.5 && pointList[i].colornum<7){
+                pointList[cnt++] = pointList[i]
+            }
+        }
+        while( pointList.length > cnt ){
+            pointList.pop();
+        }
+        drawpoint(cnt)
+    }
+</script>
